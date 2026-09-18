@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <script>document.documentElement.dataset.theme = localStorage.getItem("flagpost-theme") === "light" ? "light" : "dark";</script>
+        <meta charset="UTF-8" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="theme-color" content="#131314" media="(prefers-color-scheme: dark)" />
+        <meta name="theme-color" content="#f8fafd" media="(prefers-color-scheme: light)" />
+        <title>Flagpost</title>
+        <style>
+            html, body, #root { width: 100%; min-width: 320px; min-height: 100%; margin: 0; }
+            body { background: #131314; }
+            html[data-theme="light"] body, html[data-theme="light"] .initial-boot { background: #f8fafd; }
+            html[data-theme="light"] .initial-boot { color: #3c4043; }
+            html[data-theme="light"] .initial-boot-mark { background: #d3e3fd; }
+            html[data-theme="light"] .initial-boot-mark::before { background: #0b57d0; }
+            html[data-theme="light"] .initial-boot-mark::after { background: #fff; }
+            html[data-theme="light"] .initial-boot-progress { background: #d3e3fd; }
+            html[data-theme="light"] .initial-boot-progress::after { background: #0b57d0; }
+            .initial-boot { display: grid; position: fixed; inset: 0; place-content: center; gap: 24px; background: #131314; color: #e3e3e3; font-family: Arial, sans-serif; }
+            .initial-boot-brand { display: flex; align-items: center; gap: 13px; font-size: 25px; }
+            .initial-boot-mark { display: grid; position: relative; width: 44px; height: 44px; place-items: center; border-radius: 12px; background: #394457; }
+            .initial-boot-mark::before { width: 26px; height: 15px; border-radius: 8px; background: #8ab4f8; content: ""; }
+            .initial-boot-mark::after { position: absolute; right: 11px; width: 9px; height: 9px; border-radius: 50%; background: #131314; content: ""; }
+            .initial-boot-progress { width: 154px; height: 3px; margin: 0 auto; overflow: hidden; border-radius: 2px; background: #394457; }
+            .initial-boot-progress::after { display: block; width: 42%; height: 100%; border-radius: inherit; background: #8ab4f8; content: ""; animation: initial-progress 900ms ease-in-out infinite; }
+            @keyframes initial-progress { 0% { transform: translateX(-110%) scaleX(.75); } 50% { transform: translateX(95%) scaleX(1.15); } 100% { transform: translateX(310%) scaleX(.7); } }
+            @media (prefers-reduced-motion: reduce) { .initial-boot-progress::after { animation: none; transform: translateX(70%); } }
+        </style>
+    </head>
+    <body>
+        <div id="root"><main class="initial-boot" aria-hidden="true"><div class="initial-boot-brand"><span class="initial-boot-mark"></span><span>Flagpost</span></div><div class="initial-boot-progress"></div></main></div>
+        <script type="module" src="/src/main.jsx"></script>
+    </body>
+</html>
