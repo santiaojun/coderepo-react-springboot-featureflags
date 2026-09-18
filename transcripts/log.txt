@@ -1,0 +1,285 @@
+## [2026-09-17T17:00:51-07:00] ONBOARDING COMPLETE
+
+AGREEMENT RECORDED: F:\hackrankwork\project1\coderepo-react-springboot-featureflags
+Agent: Claude Code (Opus 5)
+Stack: springboot
+System Time: 2026-09-17T17:00:51-07:00
+
+## [2026-09-17T17:00:51-07:00] SESSION START
+
+Agent: Claude Code (Opus 5)
+Repo Root: F:\hackrankwork\project1\coderepo-react-springboot-featureflags
+Branch: main
+Worktree: main
+Parent Agent: none
+Stack: springboot
+
+## [2026-09-17T17:00:51-07:00] Onboarding and scaffolding request
+
+User Prompt (verbatim, secrets redacted):
+Please copy the frontend, backend, and configuration files (.editorconfig, .gitattributes, .gitignore, .prettierrc, .prettierignore, bun.lock, package.json, hackerrank.yml, setup.sh, .vscode) from the reference repo at F:\hackrankwork\coderepo-react-springboot-calendar-reference into this repository, to use as the scaffolding starting point.
+
+We're building a LaunchDarkly-inspired feature flag management app on top of this scaffold. The five features we've selected are:
+1. Feature flag management
+2. Environment-based configuration
+3. User and segment targeting
+4. Progressive rollouts
+5. Change history and rollbacks
+
+Before writing any implementation code, please propose:
+- The MongoDB data model / collection schemas for these five features
+- The backend API route design (endpoints, request/response shapes)
+- How the frontend feature folders should be organized
+
+Let's discuss and confirm the design first, then move on to implementation.
+
+Agent Response Summary:
+Read AGENTS.md, GUIDELINES.md, INSTRUCTIONS.md and REQUIREMENTS.md, then checked the §2 log file and found no AGREEMENT RECORDED line for this repo root. Ran the §3 onboarding flow: greeting, current system time, the seven rules verbatim, and a request for the exact string "I agree". Held off on copying files or proposing the design until the agreement was given. Performed read-only inspection of the reference calendar repo in the meantime so the follow-up turn could move quickly.
+
+Actions:
+* Read AGENTS.md, GUIDELINES.md, INSTRUCTIONS.md, REQUIREMENTS.md
+* Checked %USERPROFILE%\hackerrank_launchdarkly\log.txt (absent)
+* Listed the reference repo tree at F:\hackrankwork\coderepo-react-springboot-calendar-reference
+
+Context:
+tool=Claude Code (Opus 5)
+branch=main
+repo_root=F:\hackrankwork\project1\coderepo-react-springboot-featureflags
+worktree=main
+parent_agent=none
+
+## [2026-09-17T17:12:00-07:00] Agreement recorded, scaffold copied, architecture proposed
+
+User Prompt (verbatim, secrets redacted):
+I agree
+
+Agent Response Summary:
+Recorded the onboarding agreement and a SESSION START entry in the log. Copied the reference scaffold into this repo: frontend/ and backend/ (excluding node_modules, .gradle, build output and local .env files, keeping only .env.example), .vscode/, and the nine root config files the user listed. Studied the sample's conventions - MongoTemplate repositories, static Validator classes returning records, Map.of("data", ...) response envelopes, the ApiAuthFilter and RequestContext profile model, feature-folder frontend with co-located *.api.js and no router - then proposed a MongoDB data model of eight collections, a REST route design under /api/v1, and a frontend feature-folder layout for the five selected features. Flagged that root package.json prestart hardcodes a Windows bash path that must be restored to plain "bash setup.sh --start" for a clean checkout.
+
+Actions:
+* Created %USERPROFILE%\hackerrank_launchdarkly\log.txt with the onboarding and session-start entries
+* robocopy frontend, backend, .vscode from the reference repo; copied 9 root config files
+* Read hackerrank.yml, setup.sh, package.json, build.gradle, application.properties, vite.config.js, App.jsx, client.js
+* Read EventController/EventRepository/Event, CalendarService/CalendarValidator, ApiAuthFilter, RequestContext, GlobalExceptionHandler, HealthController, SeedRunner
+
+Context:
+tool=Claude Code (Opus 5)
+branch=main
+repo_root=F:\hackrankwork\project1\coderepo-react-springboot-featureflags
+worktree=main
+parent_agent=none
+
+## [2026-09-17T17:24:00-07:00] Architecture decisions confirmed
+
+User Prompt (verbatim, secrets redacted):
+[AskUserQuestion responses] Segments: per-environment. Flag config storage: separate flagConfigurations collection. Evaluation engine: yes, full evaluator with deterministic bucketing. Flag deletion: retire first, hard-delete only when retired.
+
+Agent Response Summary:
+Presented the full design - eight MongoDB collections, the /api/v1 route table, and the frontend feature-folder layout - and asked the user to settle four decisions where a different answer changes the implementation. The user confirmed all four recommendations: environment-scoped segments, a separate flagConfigurations collection keyed by (flagId, environmentId), a real evaluation engine using SHA-1 bucketing over seeded end users, and a retire-then-delete flag lifecycle. Design is locked; implementation proceeds from this contract.
+
+Actions:
+* AskUserQuestion with four architecture decisions
+* Recorded confirmed design contract for implementation
+
+Context:
+tool=Claude Code (Opus 5)
+branch=main
+repo_root=F:\hackrankwork\project1\coderepo-react-springboot-featureflags
+worktree=main
+parent_agent=none
+
+## [2026-09-17T22:55:00-07:00] Backend implemented and verified end to end
+
+User Prompt (verbatim, secrets redacted):
+[Continuation of the confirmed design: implement the backend before the frontend.]
+
+Agent Response Summary:
+Built the whole Spring Boot backend on the confirmed contract. Renamed the package tree to com.featureflags, ported shared/auth from the sample, replaced the calendar profile model with members, and fixed the reference clone's hardcoded Windows bash path in package.json prestart. Implemented eight collections and seven feature packages - environments, flags, targeting, rollouts, segments, audience, history - each keeping controller/service/repository/validator separate in the sample's style. Extracted ClauseValidator and ClauseMatcher into flags so targeting and segments share one clause implementation, and moved rollout parsing into rollouts/RolloutValidator so no feature duplicates another. Rollback was moved from the history route to POST /flags/{key}/environments/{env}/restore with a version, which keeps the package dependencies acyclic and makes restoring additive: it writes a new version from the stored snapshot rather than rewriting history. Wrote a seed that declares configuration history as ordered states and replays them, so seeded versions and audit snapshots are produced the same way live changes are. Verified with a 68-check live API script covering auth, all five features, validation, conflict and not-found paths: 68 of 68 pass. Separately validated the SHA-1 rollout bucketing with an independent Python reimplementation - uniform within 1 percent over 200k keys, exact agreement with the Java output, and strictly monotonic as a rollout is raised.
+
+Actions:
+* Created backend/src/main/java/com/featureflags/** (shared, auth, members, environments, flags, targeting, rollouts, segments, audience, history, seed); deleted com/calendar
+* Updated build.gradle, settings.gradle, application.properties, backend/.env.example, .vscode/launch.json, hackerrank.yml, package.json, .gitattributes, setup.sh, static/index.html
+* Ran gradlew classes and gradlew seed; started the API on port 8001 because the reference calendar backend still holds 8000
+* Ran scratchpad/api-check.sh (68 checks) and a Python bucketing validation
+
+Context:
+tool=Claude Code (Opus 5)
+branch=main
+repo_root=F:\hackrankwork\project1\coderepo-react-springboot-featureflags
+worktree=main
+parent_agent=none
+
+## [2026-09-18T00:05:00-07:00] Frontend built; environment isolation confirmed; variation metadata unlocked
+
+User Prompt (verbatim, secrets redacted):
+kill it and build the frontend
+
+[Follow-up in the same turn] Thanks for laying those out. Here's my take on each: 1. Moving rollback to POST /flags/{key}/environments/{env}/restore - agreed. 2. Dropping the duplicate GET /change-history/flags/{flagKey} route - agreed. 3. Adding the distribution and rollout/preview endpoints - agreed, real gap in my original ask. 4. Environment-scoped flag_created records - fine, but confirm: restoring a flag to v1 in dev must NOT touch staging or production; each environment's timeline and rollback fully independent. 5. Locking the variation set permanently - pushing back. Lock variation key and value (history/rollback depend on them) but allow editing non-functional metadata like display name or description. Okay to keep the original lock if too complex. Name Flagpost is fine. Continue with the frontend build. No Claude in Chrome extension - do a static/code-level check or ask me to screenshot.
+
+Agent Response Summary:
+Killed the two leftover reference-calendar processes that were holding ports 8000 and 3000 (the user authorized the first; the second was the same stale run's Vite server blocking the port GUIDELINES requires). Answered both questions with evidence rather than assertion. On question 4, confirmed per-environment independence from the code path and then proved it live: restoring checkout-express-pay to v1 in development moved development 2 to 3 while staging stayed at v2 and production stayed at v6, and showed that v1 means a different configuration in each environment because version counters are per environment. On question 5, the backend already implemented the requested middle ground - PATCH accepts only variation name and description, never value, and setValue is never called on update - so the real gap was the Settings UI exposing only the name field; added the variation description field and clarified the wording. Built the whole frontend: 9 feature folders, 28 API calls, no router or new dependency. Verified statically since browser tooling was declined: production build clean, 68 of 68 live API checks pass against port 8000, ports 3000 and 8000 correct with the Vite proxy working, and a route cross-reference showing all 30 backend product routes have a frontend consumer with zero frontend calls lacking a route. That cross-reference found one genuine defect - GET /segments/{segmentKey} had no consumer - which was removed along with its service method.
+
+Actions:
+* Killed PID 15488 (reference backend) and PID 35780 (reference Vite on port 3000)
+* Deleted calendar feature folders; wrote frontend features auth, members, environments, flags, targeting, rollouts, segments, audience, history plus shared AppHeader/AppSidebar/BrandMark/format/errors
+* Rewrote styles.css reusing the sample's exact design tokens; rebranded index.html boot screen
+* Added the variation description field to FlagSettings.jsx
+* Removed the unconsumed GET /segments/{segmentKey} route and SegmentService.getByKey
+* Ran bun run build, bun start, api-check.sh (68/68), env-isolation.sh, and a route-coverage cross-reference
+
+Context:
+tool=Claude Code (Opus 5)
+branch=main
+repo_root=F:\hackrankwork\project1\coderepo-react-springboot-featureflags
+worktree=main
+parent_agent=none
+
+## [2026-09-18T00:55:00-07:00] Seeded credentials, verification audit, and responsive fixes at four breakpoints
+
+User Prompt (verbatim, secrets redacted):
+What are the seed login credentials for this app? Also, can you confirm the app is still fully working - walk me through what's actually been verified end to end for each of the 5 features versus what's just "should work."
+
+[Follow-up in the same turn] Earlier we found a responsiveness issue: on narrow/mobile widths, some content gets cut off and buttons become unclickable, and the layout doesn't collapse into a more compact view - it just overflows horizontally instead. Per GUIDELINES.md 5.1, we need responsive layouts without horizontal page overflow at common mobile and desktop widths. Test at 375/768/1024/1440, identify every place where content overflows, gets clipped, or where interactive elements become unreachable; fix with the existing design system; specifically check the sidebar/navigation, flag list cards, environment switcher, rollout slider, targeting rules form, and change history feed; then walk me through what changed at each breakpoint.
+
+Agent Response Summary:
+Answered the credentials question from SeedData/SeedRunner: five seeded emails share the password in SeedData.DEMO_PASSWORD and every account can open any member profile. Flagged that the credentials are documented nowhere a reviewer would look, because README.md (required by the 6.1 layout) and transcripts/ do not exist yet. Separated real verification from assumption rather than restating the log: re-ran the 68-check live API suite (68/68) after restarting the stack, and reported honestly that the repo contains zero automated tests (no backend/src/test, no frontend test files) and that no feature had ever been exercised through the UI in a browser - so every visual claim was untested. Then closed that gap by building a CDP harness driving headless Chrome, auditing 10 scenarios at 375/768/1024/1440 in two modes (fresh load vs. resized from desktop). Corrected the user's premise with measurements: page-level horizontal overflow was 0px everywhere because body sets overflow:hidden, which means offending content is clipped and unreachable rather than scrollable - a worse failure than the reported one, and invisible to a scrollWidth check alone. Found and fixed four real defects: (1) no resize listener, so narrowing past 900px left the sidebar as an open overlay drawer with its scrim covering every control - the reported "buttons become unclickable"; (2) the 300px environment menu anchored to its trigger spilled to x=410 in a 375px viewport and could not be scrolled to - the reported "content gets cut off"; (3) the collapsed drawer was only translated off-screen, leaving four nav buttons in the tab order; (4) the rollout slider's UA margin overflowed its grid track by 2px at every width. Also stretched the flag-search and user-picker inputs to fill their 40px/38px wrappers so the tap target matches the visible control. Re-ran the sweep: every scenario clean except three residuals confirmed benign by targeted probes - 13/13 editor-modal controls reachable once its scrollable body is scrolled, all three environment options fully in-viewport and clickable, and the 17px checkbox which matches the reference design. Verified the drawer toggle still works in both directions at 1440 and 375, the production build is clean, and the API suite still passes 68/68.
+
+Actions:
+* Edited frontend/src/App.jsx: added a matchMedia("(max-width: 900px)") change listener syncing sidebarCollapsed
+* Edited frontend/src/styles.css: visibility on .sidebar-collapsed .sidebar at both breakpoints with a delayed transition; .environment-menu pinned to the viewport under 900px; .rollout-slider margin/min-width; align-self on .flag-search and .user-picker-field inputs
+* Wrote scratchpad cdp.js, audit.js, confirm.js, toggle.js (CDP harness over headless Chrome); saved audit-before.txt and audit-after.txt
+* Ran bun start, api-check.sh (68/68 twice), bun run build (clean)
+* Noted missing README.md and transcripts/ against the 6.1 repo layout
+
+Context:
+tool=Claude Code (Opus 5)
+branch=main
+repo_root=F:\hackrankwork\project1\coderepo-react-springboot-featureflags
+worktree=main
+parent_agent=none
+
+## [2026-09-18T09:35:00-07:00] Restarted the stack; wrote README with seeded credentials and run instructions
+
+User Prompt (verbatim, secrets redacted):
+restart it so I can verify the breakpoints myself
+
+[Follow-up in the same turn] write the README with the seeded credentials and run instructions
+
+Agent Response Summary:
+Reported that the previously running stack had been reaped by the harness for low system memory, not by any fault of the app, and that no verification result was affected because every check had completed beforehand. Restarted it on request after checking headroom, and said plainly that only 5.5 percent of RAM was free so it might be reaped again; both services came up (3000 and 8000) and MongoDB was still running from earlier. Then wrote README.md, which the 6.1 repo layout requires and which had never existed - the gap flagged in the previous turn, and the reason the seeded credentials were undiscoverable. Sourced every fact rather than describing the app from memory: versions from build.gradle and frontend/package.json, commands from hackerrank.yml and setup.sh, env vars from application.properties, collection names from the @Document annotations, and a 30-route table extracted from the controllers. Queried the live API for seed counts instead of guessing, which corrected a first attempt that misread the response envelope - flags and segments are nested under data.flags and data.segments, so the real figures are 12 flags per environment (11 active, 1 retired) across 14 tags, 3 environment-scoped segments, 40 end users over 3 plans and 10 countries, and 60 change records. Verified two claims before asserting them: SelectMenu really does implement ArrowUp/ArrowDown/Home/End/Escape, and both themes exist. Caught and fixed unescaped pipe characters inside two API table cells that would have broken the markdown table, then validated every table's cell counts. Flagged that transcripts/ is referenced in the structure section but does not exist yet, and that frontend/package.json is still named calendar-frontend from the reference scaffold.
+
+Actions:
+* Restarted bun start after checking free memory; confirmed frontend=200 and backend=200
+* Created README.md: product identity, seeded access table, seed inventory, prerequisites, run commands, configuration, five features, structure, collections, API table, accessibility and responsiveness
+* Read build.gradle, frontend/package.json, setup.sh, application.properties, vite.config.js, .gitignore, both .env.example files
+* Extracted the route table from *Controller.java and collection names from @Document annotations
+* Queried the live API for environment, member, flag, tag, segment, audience, and change-record counts
+* Verified SelectMenu keyboard handlers and theme.js before documenting them
+* Fixed pipe escaping in the Flags and Segments rows of the API table
+
+Context:
+tool=Claude Code (Opus 5)
+branch=main
+repo_root=F:\hackrankwork\project1\coderepo-react-springboot-featureflags
+worktree=main
+parent_agent=none
+
+## [2026-09-18T09:52:00-07:00] Restarted the stack again; rebranded the frontend workspace package
+
+User Prompt (verbatim, secrets redacted):
+restart it
+
+[Follow-up in the same turn] yes, rebrand the frontend package.json
+
+Agent Response Summary:
+Reported that the stack had been reaped a second time for low system memory and corrected the now-stale claim in the prior message that it was still up; MongoDB survived because it is a Docker container rather than a harness-tracked shell. Restarted on request with memory recovered to 15.7 percent free, and confirmed both ports responding. Then rebranded the frontend workspace, which was still named calendar-frontend from the reference scaffold: searched first and found the old branding in exactly two places, frontend/package.json and bun.lock, with no source, config, or HTML references. Renamed to flagpost-frontend with the description "Flagpost feature flag workspace frontend". Because a workspace rename invalidates the lockfile and "clean checkout works" is an acceptance criterion, ran bun install to regenerate it; the "1 package removed" line in that output was investigated rather than assumed benign and turned out to be the stale calendar-frontend workspace symlink in the root node_modules - all five frontend dependencies remained intact in frontend/node_modules at their declared versions. Verified the production build still succeeds with byte-identical asset hashes to the previous build, the running app still answers on both ports, and bun install --frozen-lockfile now passes clean across 47 installs and 72 packages, which is the check that matters for a fresh clone.
+
+Actions:
+* Restarted bun start; confirmed frontend=200 and backend=200
+* Edited frontend/package.json: name calendar-frontend -> flagpost-frontend, description -> "Flagpost feature flag workspace frontend"
+* Ran bun install to update bun.lock; verified the workspace entries at lines 12 and 86
+* Confirmed react, react-dom, @fontsource/roboto, @vitejs/plugin-react, vite all still present at declared versions
+* Ran bun run build (clean, identical hashes) and bun install --frozen-lockfile (exit 0, no changes)
+
+Context:
+tool=Claude Code (Opus 5)
+branch=main
+repo_root=F:\hackrankwork\project1\coderepo-react-springboot-featureflags
+worktree=main
+parent_agent=none
+
+## [2026-09-18T10:40:00-07:00] Ran the validate skill end to end; README section gate audited
+
+User Prompt (verbatim, secrets redacted):
+The five features and the responsiveness fix are all verified working. Let's move to pre-submission steps:
+1. Please run the validator at skills/validate/SKILL.md against this repo, following its full workflow, and give me the complete report with every PASS/FAIL/MANUAL item.
+2. Separately, please check whether README.md currently satisfies all 8 required sections from GUIDELINES.md 6 (product identity, tech stack, project structure, prerequisites, MongoDB behavior, run instructions, command reference, seeded access). If anything is missing or placeholder content, let me know what's missing before you write it - I want to review the gaps first.
+
+Agent Response Summary:
+Read SKILL.md and all three references, then executed the full seven-step workflow. Recorded the starting state and immediately hit the largest finding: the repository has zero commits, git rev-parse HEAD fails and git ls-files returns 0, so every one of the 18 top-level entries is untracked. That makes S18 a hard FAIL because git archive exits 128 and the archive cannot be produced, listed, or byte-measured; the would-be payload was computed at about 601 KB after export-ignore, well under the 5 MB limit, but recorded as an estimate rather than a measurement. Completed S01-S19 with direct evidence rather than folder names: diffed every manifest against the scaffold baseline and proved the dependency surface is byte-identical after normalizing line endings, traced one read and one write through controller/service/repository/MongoTemplate with line numbers, and reconciled the API surface in both directions - 30 backend routes, 29 product routes each with a frontend consumer, /health operational only, and 29 API-client methods with zero unconsumed. Announced before runtime, stopped the app this session had started, then ran R01-R12 using only the exact hackerrank.yml commands. Two self-corrections mattered: gradlew classes reported UP-TO-DATE, which is not proof of compilation, so a real compile was forced with --rerun-tasks before recording R03; and the first runtime script reported R08d and R08g as failures, which on inspection were wrong key paths in the script rather than product defects - the responses nest under data.evaluation and data.evaluations - so both were re-run correctly and only then recorded PASS. Verified persistence with a uniquely named record through create/read/update/toggle/retire/delete, then created a second probe and restarted with the declared command to prove the seed reset removes it and restores 11 flags, 60 change records, and 40 audience members. Cleaned up: stopped only audit-started processes, left the pre-existing Docker MongoDB alone, and confirmed the ending git status is byte-identical to the starting 18 untracked entries. Final tally 29 PASS, 2 FAIL, 0 MANUAL, 0 N/A across 31 checks plus 20 feature-acceptance rows all PASS; verdict not ready, blocked on the missing commit and the README. For the second request, audited the README against the eight required sections and reported the gaps without writing anything, as asked: technology stack and MongoDB behavior are absent, and the structure tree lists a transcripts/ directory that does not exist.
+
+Actions:
+* Read skills/validate/SKILL.md and references/static-checks.md, runtime-checks.md, report-format.md; read GUIDELINES.md sections 3, 6, 7
+* Recorded starting git state and port listeners on 3000, 8000, 27017
+* Static: diffed manifests vs the calendar baseline, traced read/write layers, extracted 30 routes and 29 client methods, cross-referenced consumers, scanned for debug residue, mock data, external media, competing lockfiles, relational deps
+* Attempted git archive HEAD (exit 128) and computed the would-be archive size
+* Runtime: bun install && bash setup.sh --seed, bun run build, gradlew compileJava --rerun-tasks, bun start with bounded readiness polling, then R05-R11 via scratchpad scripts
+* Corrected R03 (forced real compile) and re-ran R08d/R08g after finding the script read wrong response keys
+* Stopped both audit-started app processes; confirmed ending git status matches the start exactly
+* Wrote the report to the session scratchpad, outside the repository
+
+Context:
+tool=Claude Code (Opus 5)
+branch=main
+repo_root=F:\hackrankwork\project1\coderepo-react-springboot-featureflags
+worktree=main
+parent_agent=none
+
+## [2026-09-18T11:05:00-07:00] Wrote README sections 2 and 5, fixed the tree, removed transcripts export-ignore
+
+User Prompt (verbatim, secrets redacted):
+yes, write 2 and 5 and fix the tree
+
+[Follow-up in the same turn] Good catch on both: 1. Yes, please add the seed/reset warning to the MongoDB behavior section of the README. 2. On the transcripts/ export-ignore issue - that needs to be fixed, not kept as-is. AGENTS.md explicitly requires transcripts/ to be included in the submission, so having .gitattributes silently strip it out of the archive would mean I fail that requirement without realizing it. Please remove transcripts/ from export-ignore in .gitattributes, and go ahead and fix the README gaps you found in 2 and 5 of the tree.
+
+Agent Response Summary:
+Closed the two README gaps the validator found, verifying each asserted fact from source first rather than describing the stack from memory: confirmed the Gradle wrapper at 9.7.1 from gradle-wrapper.properties, the two public routes from ApiAuthFilter, and the HMAC256 two-token model with its workspace/profile claim types from JwtService. Added a technology-stack section as a fifteen-row table covering frontend, build tool, state approach, HTTP client, backend, language and runtime, backend build tool, database, data access, package manager, process runner, validation, authentication, and typography, plus subsections documenting the validation envelope and the two-stage login with the exact error shape. Added a MongoDB-behavior section with a connection subsection covering the URI, the setup.sh readiness path and its failure mode, and the health endpoint's 200/503 reporting, then a seeding-and-reset subsection led by a blockquote warning that every bun start wipes and reseeds and that anything created in a previous session is deleted - the gap that mattered most, since a reviewer could otherwise lose their own data without warning. Corrected the structure tree to drop the nonexistent path and add the debugger config, AGENTS.md, README.md, package.json, both .env.example files, application.properties, build.gradle and vite.config.js. Removed transcripts export-ignore from .gitattributes as instructed and verified the result with git check-attr: skills resolves to set, transcripts to unspecified, and GUIDELINES 3.6 only requires GUIDELINES.md and skills to be excluded so nothing conflicts. Raised an important caveat the user had not asked about: removing the rule is necessary but not sufficient, because git cannot track an empty directory, so transcripts will only reach the archive once the log file is actually copied into it. Verified the one operator claim added to the README by executing it - bun run dev:frontend emitted zero setup or seed markers, confirming the dev scripts bypass prestart - then released the port. Re-checked the README gate: all eight sections present, six tables with no malformed rows. Updated the validation report to S03 PASS and 30 PASS / 1 FAIL, and caught that the first scripted edit had left stale FAIL evidence in the S03 row while changing only its verdict, then fixed that cell. S18 remains the sole blocker: still no commits.
+
+Actions:
+* Verified gradle-wrapper.properties (9.7.1), ApiAuthFilter public paths, JwtService claims, GlobalExceptionHandler envelope
+* README.md: added "## Technology stack" with Validation and Authentication subsections; added "## MongoDB behavior" with Connection and "Seeding and reset" including the destructive-reset callout; rewrote the structure tree; re-added transcripts/ marked as added at submission
+* .gitattributes: removed the transcripts export-ignore line; verified with git check-attr
+* Ran bun run dev:frontend under a timeout to prove prestart is skipped; stopped it and released port 3000
+* Validated README headings, 6 tables, and the section anchor
+* Updated the validation report verdict, counts, failure list, and observations; corrected the stale S03 evidence cell
+
+Context:
+tool=Claude Code (Opus 5)
+branch=main
+repo_root=F:\hackrankwork\project1\coderepo-react-springboot-featureflags
+worktree=main
+parent_agent=none
+
+## [2026-09-18T11:30:00-07:00] Committed the repo to main; archive check now passes; caught a lost executable bit
+
+User Prompt (verbatim, secrets redacted):
+yes, commit everything to main
+
+Agent Response Summary:
+Cleared the last validator blocker. Dry-ran the staging set first and confirmed 169 files with no .env, secret, key, or credential file and no node_modules, build, dist, .gradle, .claude or log artifact; largest entries were styles.css at 62 KB and the Gradle wrapper jar at 47 KB. Committed to main as ed88a97 with a message describing the five features, the architectural decisions behind them, and the seed design. Deliberately did not create or commit transcripts/, because AGENTS.md section 2 forbids adding the log to git while work is in progress - that copy belongs at submission time. Git then emitted CRLF warnings, which prompted a check of how the shell scripts were stored, and that surfaced a real latent defect the earlier validation could not have caught: committing on Windows with core.filemode=false recorded setup.sh and backend/gradlew as 100644, while the sample repo has both at 100755. A Linux clone could not have run ./gradlew bootRun, which is exactly what bun start invokes through dev:backend, so the declared run command would have failed with permission denied on a clean checkout - invisible locally because Windows does not enforce the bit. Confirmed the gradlew blob hash matched the reference exactly, so only the mode had regressed, then fixed both with git update-index --chmod=+x and committed as dc13223. Line endings were already LF in the index, so the CRLF warnings themselves were benign. Re-ran S18: git archive exits 0 with 198 entries and a measured 778,240 bytes, 0.74 MB against the 5 MB limit, README.md and AGENTS.md and both .env.example files present, GUIDELINES.md and INSTRUCTIONS.md and REQUIREMENTS.md and the three formatter configs and skills/ all absent, no ignored artifact leaked, and the executable bit preserved as rwxrwxr-x. Caught one self-inflicted evidence error along the way: the first archive listing ran tar against a C:/ path, which tar read as a remote host, so every "absent" line in that output was a failed command rather than a finding; re-ran with a local path before recording anything. Report updated to 31 PASS, 0 FAIL, 0 MANUAL and a ready verdict.
+
+Actions:
+* git add -A --dry-run review for secrets, generated output, and large files
+* git commit ed88a97 (169 files) with the feature and architecture summary
+* Investigated CRLF warnings; found setup.sh and backend/gradlew at 100644 vs the reference's 100755; compared blob hashes
+* git update-index --chmod=+x setup.sh backend/gradlew; git commit dc13223
+* git archive --format=tar HEAD to a scratch path; verified size, inclusions, exclusions, source counts, and file modes; removed the scratch archive
+* Re-ran the tar listing after the first attempt failed on a Windows drive path
+* Updated the validation report: commit field, S18 verdict and evidence, counts, verdict sentence, and failures section
+
+Context:
+tool=Claude Code (Opus 5)
+branch=main
+repo_root=F:\hackrankwork\project1\coderepo-react-springboot-featureflags
+worktree=main
+parent_agent=none
